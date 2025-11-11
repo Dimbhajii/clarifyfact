@@ -1,0 +1,263 @@
+.terms-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to bottom, #e8f5e9 0%, #c8e6c9 100%);
+}
+
+.terms-container {
+  flex: 1;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  width: 100%;
+}
+
+.terms-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.terms-updated {
+  text-align: center;
+  font-size: 1rem;
+  color: #64748b;
+  margin-bottom: 3rem;
+}
+
+.terms-content {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 3rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.terms-intro {
+  margin-bottom: 3rem;
+}
+
+.terms-intro p {
+  font-size: 1.05rem;
+  color: #475569;
+  line-height: 1.8;
+  margin-bottom: 1rem;
+}
+
+/* Table of Contents */
+.terms-toc {
+  background-color: #f8f9fa;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  margin-bottom: 3rem;
+  border: 1px solid #e2e8f0;
+}
+
+.terms-toc h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1.5rem;
+}
+
+.terms-toc ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0.75rem;
+}
+
+.terms-toc li {
+  margin: 0;
+}
+
+.terms-toc a {
+  color: #28a745;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color 0.3s ease;
+}
+
+.terms-toc a:hover {
+  color: #218838;
+  text-decoration: underline;
+}
+
+/* Terms Sections */
+.terms-section {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.terms-section:last-of-type {
+  border-bottom: none;
+}
+
+.terms-section h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1.25rem;
+  scroll-margin-top: 100px;
+}
+
+.terms-section p {
+  font-size: 1.05rem;
+  color: #475569;
+  line-height: 1.8;
+  margin-bottom: 1rem;
+}
+
+.terms-section p:last-child {
+  margin-bottom: 0;
+}
+
+.terms-section ul {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.terms-section li {
+  font-size: 1.05rem;
+  color: #475569;
+  line-height: 1.8;
+  margin-bottom: 0.75rem;
+}
+
+.terms-section li:last-child {
+  margin-bottom: 0;
+}
+
+.terms-section strong {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.terms-caps {
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.3px;
+}
+
+/* Footer Note */
+.terms-footer-note {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid #e2e8f0;
+  text-align: center;
+}
+
+.terms-footer-note p {
+  font-size: 1rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.terms-ethical-note {
+  font-size: 0.9rem !important;
+  color: #94a3b8 !important;
+  font-style: italic;
+}
+
+.terms-ethical-note a {
+  color: #28a745;
+  text-decoration: none;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.terms-ethical-note a:hover {
+  text-decoration: underline;
+}
+
+/* Links */
+.terms-section a {
+  color: #28a745;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.terms-section a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .terms-container {
+    padding: 3rem 1.5rem;
+  }
+  
+  .terms-title {
+    font-size: 2.25rem;
+  }
+  
+  .terms-content {
+    padding: 2rem 1.5rem;
+  }
+  
+  .terms-intro p,
+  .terms-section p,
+  .terms-section li {
+    font-size: 1rem;
+  }
+  
+  .terms-section h2 {
+    font-size: 1.35rem;
+  }
+  
+  .terms-toc {
+    padding: 1.5rem;
+  }
+  
+  .terms-toc h2 {
+    font-size: 1.35rem;
+  }
+  
+  .terms-toc ul {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .terms-container {
+    padding: 2rem 1rem;
+  }
+  
+  .terms-title {
+    font-size: 2rem;
+  }
+  
+  .terms-content {
+    padding: 1.5rem 1rem;
+  }
+  
+  .terms-intro p,
+  .terms-section p,
+  .terms-section li {
+    font-size: 0.95rem;
+  }
+  
+  .terms-section h2 {
+    font-size: 1.25rem;
+  }
+  
+  .terms-toc {
+    padding: 1.25rem;
+  }
+  
+  .terms-toc h2 {
+    font-size: 1.25rem;
+  }
+  
+  .terms-section ul {
+    padding-left: 1.5rem;
+  }
+}
+

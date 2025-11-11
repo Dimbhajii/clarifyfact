@@ -1,0 +1,253 @@
+.ethical-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to bottom, #e8f5e9 0%, #c8e6c9 100%);
+}
+
+.ethical-container {
+  flex: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  width: 100%;
+}
+
+.ethical-title {
+  font-size: 2.75rem;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
+  margin-bottom: 3rem;
+  line-height: 1.2;
+}
+
+.ethical-content {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 3rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.ethical-intro {
+  font-size: 1.25rem;
+  color: #0f172a;
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.ethical-text {
+  font-size: 1.1rem;
+  color: #475569;
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+}
+
+.ethical-highlight {
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  border-radius: 0.5rem;
+}
+
+.ethical-highlight p {
+  font-size: 1.1rem;
+  color: #0f172a;
+  line-height: 1.8;
+  margin: 0;
+}
+
+.ethical-highlight strong {
+  color: #856404;
+}
+
+.ethical-feature {
+  margin: 2.5rem 0;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+}
+
+.feature-heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1rem;
+}
+
+.ethical-notice {
+  background-color: #d1ecf1;
+  border: 1px solid #bee5eb;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin: 2.5rem 0;
+  text-align: center;
+}
+
+.ethical-notice p {
+  font-size: 1rem;
+  color: #0c5460;
+  font-weight: 600;
+  margin: 0;
+  font-style: italic;
+}
+
+.ethical-guidelines {
+  margin: 3rem 0;
+  padding: 2.5rem;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.guidelines-heading {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.guidelines-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.guidelines-list li {
+  padding: 1rem 0 1rem 2rem;
+  color: #475569;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  position: relative;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.guidelines-list li:last-child {
+  border-bottom: none;
+}
+
+.guidelines-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #28a745;
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+.guidelines-list strong {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.ethical-commitment {
+  margin-top: 3rem;
+  padding: 2.5rem;
+  background-color: #f8f9fa;
+  border-radius: 1rem;
+  border: 2px solid #28a745;
+}
+
+.commitment-heading {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.ethical-commitment .ethical-text {
+  margin-bottom: 1rem;
+}
+
+.ethical-commitment strong {
+  color: #28a745;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ethical-container {
+    padding: 3rem 1.5rem;
+  }
+  
+  .ethical-title {
+    font-size: 2rem;
+  }
+  
+  .ethical-content {
+    padding: 2rem 1.5rem;
+  }
+  
+  .ethical-intro {
+    font-size: 1.1rem;
+  }
+  
+  .ethical-text {
+    font-size: 1rem;
+  }
+  
+  .feature-heading,
+  .guidelines-heading,
+  .commitment-heading {
+    font-size: 1.5rem;
+  }
+  
+  .ethical-guidelines {
+    padding: 2rem 1.5rem;
+  }
+  
+  .ethical-commitment {
+    padding: 2rem 1.5rem;
+  }
+  
+  .guidelines-list li {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ethical-container {
+    padding: 2rem 1rem;
+  }
+  
+  .ethical-title {
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+  }
+  
+  .ethical-content {
+    padding: 1.5rem 1rem;
+  }
+  
+  .ethical-intro {
+    font-size: 1rem;
+  }
+  
+  .ethical-text {
+    font-size: 0.95rem;
+  }
+  
+  .ethical-highlight,
+  .ethical-feature,
+  .ethical-guidelines,
+  .ethical-commitment {
+    padding: 1.5rem 1rem;
+  }
+  
+  .feature-heading,
+  .guidelines-heading,
+  .commitment-heading {
+    font-size: 1.3rem;
+  }
+  
+  .guidelines-list li {
+    font-size: 0.95rem;
+    padding-left: 1.5rem;
+  }
+}
+

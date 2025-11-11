@@ -1,0 +1,92 @@
+.question-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to bottom, #e8f5e9 0%, #c8e6c9 100%);
+}
+
+.question-page-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  min-height: calc(100vh - 200px); /* Adjust based on NavBar and Footer height */
+  gap: 2rem;
+}
+
+/* Expand the text-input-section to take full width with appropriate max-width */
+.question-page-content .text-input-section {
+  width: 100%;
+  max-width: 1200px;
+  padding: 0;
+}
+
+/* Expand the input-container for better full-page experience */
+.question-page-content .input-container {
+  max-width: 100%;
+  padding: 2rem;
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make textarea larger for full-page */
+.question-page-content .text-area {
+  width: 100% !important;
+  height: 300px;
+  min-height: 300px;
+  padding: 1rem;
+}
+
+/* Enhance question display for full-page */
+.question-page-content .question-display {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+}
+
+.question-page-content .question-text {
+  font-size: 1.25rem;
+  line-height: 1.8;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .question-page-content {
+    padding: 1rem;
+    min-height: calc(100vh - 150px);
+  }
+
+  .question-page-content .input-container {
+    padding: 1.5rem;
+    min-height: 400px;
+  }
+
+  .question-page-content .text-area {
+    height: 250px;
+    min-height: 250px;
+  }
+
+  .question-page-content .question-text {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .question-page-content {
+    padding: 0.75rem;
+  }
+
+  .question-page-content .input-container {
+    padding: 1rem;
+    min-height: 350px;
+  }
+
+  .question-page-content .text-area {
+    height: 200px;
+    min-height: 200px;
+  }
+}
+
