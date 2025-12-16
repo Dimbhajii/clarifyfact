@@ -32,6 +32,20 @@ const config = {
     apiKey: functionsConfig.openai?.api_key || process.env.OPENAI_API_KEY,
     useMock: false, // Always false in production
   },
+  stripe: {
+    // Priority: Firebase Functions config > Environment variable
+    secretKey: functionsConfig.stripe?.secret_key || process.env.STRIPE_SECRET_KEY,
+    publishableKey: functionsConfig.stripe?.publishable_key || process.env.STRIPE_PUBLISHABLE_KEY,
+    webhookSecret: functionsConfig.stripe?.webhook_secret || process.env.STRIPE_WEBHOOK_SECRET,
+  },
+  tavily: {
+    // Tavily API for web search (free tier available)
+    apiKey: functionsConfig.tavily?.api_key || process.env.TAVILY_API_KEY,
+  },
+  serper: {
+    // Serper API for Google search (free tier available)
+    apiKey: functionsConfig.serper?.api_key || process.env.SERPER_API_KEY,
+  },
   cors: {
     // Get from Firebase Functions config or use default
     origin: functionsConfig.cors?.origin || process.env.CORS_ORIGIN || '*',
