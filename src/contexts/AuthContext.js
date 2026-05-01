@@ -1,12 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged
-} from 'firebase/auth';
-import { auth, googleProvider } from '../firebase';
+import { supabase } from '../firebase';
 import { saveUserProfile, getUserProfile } from '../services/databaseService';
 
 const AuthContext = createContext({});
@@ -15,82 +8,71 @@ export const useAuth = () => {
   return useContext(AuthContext);
 };
 
+// Adapt Supabase user to match the shape the rest of the app expects
+const adaptUser = (user) => {
+  if (!user) return null;
+  return {
+    ...user,
+    uid: user.id,
+    displayName: user.user_metadata?.full_name || user.email?.split('@')[0],
+    photoURL: user.user_metadata?.avatar_url || null,
+  };
+};
+
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Sign up with email/password
   const signup = async (email, password) => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      // Create user profile in Firestore
-      if (userCredential.user) {
-        try {
-          await saveUserProfile(userCredential.user.uid, {
-            email: email,
-            displayName: email.split('@')[0],
-            provider: 'email'
-          });
-        } catch (error) {
-          console.error('Error creating user profile:', error);
-          // Don't fail signup if profile creation fails
-        }
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) throw error;
+    if (data.user) {
+      try {
+        await saveUserProfile(data.user.id, {
+          email,
+          display_name: email.split('@')[0],
+          provider: 'email',
+        });
+      } catch (err) {
+        console.error('Error creating user profile:', err);
       }
-      return userCredential;
-    } catch (error) {
-      console.error('Signup error:', error);
-      // Re-throw the error so AuthModal can handle it
-      throw error;
     }
+    return data;
   };
 
-  // Sign in with email/password
   const login = async (email, password) => {
-    try {
-      return await signInWithEmailAndPassword(auth, email, password);
-    } catch (error) {
-      console.error('Login error:', error);
-      // Re-throw the error so AuthModal can handle it
-      throw error;
-    }
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data;
   };
 
-  // Sign in with Google
   const signInWithGoogle = async () => {
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      // Create/update user profile in Firestore
-      if (result.user) {
-        try {
-          await saveUserProfile(result.user.uid, {
-            email: result.user.email,
-            displayName: result.user.displayName,
-            photoURL: result.user.photoURL,
-            provider: 'google'
-          });
-        } catch (error) {
-          console.error('Error saving user profile:', error);
-          // Don't fail signin if profile save fails - user is still authenticated
-          // The profile will be created/updated on next load
-        }
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+    if (error) throw error;
+  };
+
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  };
+
+  const refreshUserProfile = async () => {
+    if (currentUser) {
+      try {
+        const profile = await getUserProfile(currentUser.uid);
+        setUserProfile(profile);
+      } catch (error) {
+        console.error('Error refreshing user profile:', error);
       }
-      return result;
-    } catch (error) {
-      console.error('Google sign-in error:', error);
-      console.error('Error code:', error.code);
-      console.error('Error message:', error.message);
-      // Re-throw the error so AuthModal can handle it with user-friendly messages
-      throw error;
     }
   };
 
-  // Sign out
-  const logout = async () => {
-    return await signOut(auth);
-  };
-
-  // Load user profile when user changes
   useEffect(() => {
     const loadUserProfile = async (userId) => {
       try {
@@ -109,27 +91,19 @@ export const AuthProvider = ({ children }) => {
     }
   }, [currentUser]);
 
-  // Monitor auth state
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setCurrentUser(session ? adaptUser(session.user) : null);
       setLoading(false);
     });
 
-    return unsubscribe;
-  }, []);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session ? adaptUser(session.user) : null);
+      setLoading(false);
+    });
 
-  // Refresh user profile (call this after balance updates)
-  const refreshUserProfile = async () => {
-    if (currentUser) {
-      try {
-        const profile = await getUserProfile(currentUser.uid);
-        setUserProfile(profile);
-      } catch (error) {
-        console.error('Error refreshing user profile:', error);
-      }
-    }
-  };
+    return () => subscription.unsubscribe();
+  }, []);
 
   const value = {
     currentUser,
@@ -138,7 +112,7 @@ export const AuthProvider = ({ children }) => {
     signup,
     login,
     signInWithGoogle,
-    logout
+    logout,
   };
 
   return (
@@ -147,4 +121,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-

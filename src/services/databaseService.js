@@ -1,344 +1,196 @@
-import { 
-  collection, 
-  addDoc, 
-  doc, 
-  getDoc, 
-  getDocs, 
-  updateDoc, 
-  deleteDoc,
-  setDoc,
-  query,
-  where,
-  orderBy,
-  limit,
-  Timestamp,
-  serverTimestamp
-} from 'firebase/firestore';
-import { db } from '../firebase';
+import { supabase } from '../firebase';
 
-/**
- * Save an assignment to Firestore
- * @param {string} userId - User ID
- * @param {Object} assignmentData - Assignment data to save
- * @returns {Promise<string>} Document ID
- */
 export async function saveAssignment(userId, assignmentData) {
-  try {
-    const assignmentDoc = {
-      userId,
-      assignmentTopic: assignmentData.assignmentTopic,
-      courseMaterials: assignmentData.courseMaterials?.substring(0, 5000) || '', // Limit size
-      selectedOpinion: assignmentData.selectedOpinion,
+  const { data, error } = await supabase
+    .from('assignments')
+    .insert({
+      user_id: userId,
+      assignment_topic: assignmentData.assignmentTopic,
+      course_materials: assignmentData.courseMaterials?.substring(0, 5000) || '',
+      selected_opinion: assignmentData.selectedOpinion,
       summary: assignmentData.summary,
-      finalAssignment: assignmentData.finalAssignment,
-      verifiedSources: assignmentData.verifiedSources || [],
-      uploadedFiles: assignmentData.uploadedFiles || [],
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      status: 'completed'
-    };
+      final_assignment: assignmentData.finalAssignment,
+      verified_sources: assignmentData.verifiedSources || [],
+      uploaded_files: assignmentData.uploadedFiles || [],
+      status: 'completed',
+    })
+    .select('id')
+    .single();
 
-    const docRef = await addDoc(collection(db, 'assignments'), assignmentDoc);
-    return docRef.id;
-  } catch (error) {
-    console.error('Error saving assignment:', error);
-    throw new Error(`Failed to save assignment: ${error.message}`);
-  }
+  if (error) throw new Error(`Failed to save assignment: ${error.message}`);
+  return data.id;
 }
 
-/**
- * Get all assignments for a user
- * @param {string} userId - User ID
- * @param {number} maxResults - Maximum number of results (default: 50)
- * @returns {Promise<Array>} Array of assignments
- */
 export async function getUserAssignments(userId, maxResults = 50) {
-  try {
-    const assignmentsRef = collection(db, 'assignments');
-    
-    // Try to query with orderBy, if it fails (missing index), fetch all and sort client-side
-    let querySnapshot;
-    try {
-      const q = query(
-        assignmentsRef,
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc'),
-        limit(maxResults)
-      );
-      querySnapshot = await getDocs(q);
-    } catch (indexError) {
-      // If index doesn't exist, fetch all user assignments and sort client-side
-      console.warn('Firestore index not found, fetching all and sorting client-side:', indexError);
-      const q = query(
-        assignmentsRef,
-        where('userId', '==', userId),
-        limit(maxResults * 2) // Fetch more to account for client-side sorting
-      );
-      querySnapshot = await getDocs(q);
-    }
+  const { data, error } = await supabase
+    .from('assignments')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(maxResults);
 
-    const assignments = [];
+  if (error) throw new Error(`Failed to get assignments: ${error.message}`);
 
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      assignments.push({
-        id: doc.id,
-        ...data
-      });
-    });
-
-    // If we had to fetch without orderBy, sort client-side
-    if (assignments.length > 0 && !assignments[0].createdAt) {
-      // If createdAt is missing, just return as-is
-      return assignments;
-    }
-
-    // Sort by createdAt if not already sorted (client-side fallback)
-    assignments.sort((a, b) => {
-      const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
-      const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
-      return bTime - aTime; // Descending order
-    });
-
-    return assignments.slice(0, maxResults);
-  } catch (error) {
-    console.error('Error getting user assignments:', error);
-    throw new Error(`Failed to get assignments: ${error.message}`);
-  }
+  return (data || []).map(row => ({
+    id: row.id,
+    userId: row.user_id,
+    assignmentTopic: row.assignment_topic,
+    courseMaterials: row.course_materials,
+    selectedOpinion: row.selected_opinion,
+    summary: row.summary,
+    finalAssignment: row.final_assignment,
+    verifiedSources: row.verified_sources,
+    uploadedFiles: row.uploaded_files,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }));
 }
 
-/**
- * Get a single assignment by ID
- * @param {string} assignmentId - Assignment document ID
- * @returns {Promise<Object>} Assignment data
- */
 export async function getAssignment(assignmentId) {
-  try {
-    const docRef = doc(db, 'assignments', assignmentId);
-    const docSnap = await getDoc(docRef);
+  const { data, error } = await supabase
+    .from('assignments')
+    .select('*')
+    .eq('id', assignmentId)
+    .single();
 
-    if (docSnap.exists()) {
-      return {
-        id: docSnap.id,
-        ...docSnap.data()
-      };
-    } else {
-      throw new Error('Assignment not found');
-    }
-  } catch (error) {
-    console.error('Error getting assignment:', error);
-    throw new Error(`Failed to get assignment: ${error.message}`);
-  }
+  if (error) throw new Error(`Failed to get assignment: ${error.message}`);
+
+  return {
+    id: data.id,
+    userId: data.user_id,
+    assignmentTopic: data.assignment_topic,
+    courseMaterials: data.course_materials,
+    selectedOpinion: data.selected_opinion,
+    summary: data.summary,
+    finalAssignment: data.final_assignment,
+    verifiedSources: data.verified_sources,
+    uploadedFiles: data.uploaded_files,
+    status: data.status,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  };
 }
 
-/**
- * Update an assignment
- * @param {string} assignmentId - Assignment document ID
- * @param {Object} updateData - Data to update
- * @returns {Promise<void>}
- */
 export async function updateAssignment(assignmentId, updateData) {
-  try {
-    const docRef = doc(db, 'assignments', assignmentId);
-    await updateDoc(docRef, {
-      ...updateData,
-      updatedAt: serverTimestamp()
-    });
-  } catch (error) {
-    console.error('Error updating assignment:', error);
-    throw new Error(`Failed to update assignment: ${error.message}`);
-  }
+  const mapped = {};
+  if (updateData.assignmentTopic !== undefined) mapped.assignment_topic = updateData.assignmentTopic;
+  if (updateData.courseMaterials !== undefined) mapped.course_materials = updateData.courseMaterials;
+  if (updateData.selectedOpinion !== undefined) mapped.selected_opinion = updateData.selectedOpinion;
+  if (updateData.summary !== undefined) mapped.summary = updateData.summary;
+  if (updateData.finalAssignment !== undefined) mapped.final_assignment = updateData.finalAssignment;
+  if (updateData.verifiedSources !== undefined) mapped.verified_sources = updateData.verifiedSources;
+  if (updateData.status !== undefined) mapped.status = updateData.status;
+
+  const { error } = await supabase
+    .from('assignments')
+    .update(mapped)
+    .eq('id', assignmentId);
+
+  if (error) throw new Error(`Failed to update assignment: ${error.message}`);
 }
 
-/**
- * Delete an assignment
- * @param {string} assignmentId - Assignment document ID
- * @returns {Promise<void>}
- */
 export async function deleteAssignment(assignmentId) {
-  try {
-    const docRef = doc(db, 'assignments', assignmentId);
-    await deleteDoc(docRef);
-  } catch (error) {
-    console.error('Error deleting assignment:', error);
-    throw new Error(`Failed to delete assignment: ${error.message}`);
-  }
+  const { error } = await supabase
+    .from('assignments')
+    .delete()
+    .eq('id', assignmentId);
+
+  if (error) throw new Error(`Failed to delete assignment: ${error.message}`);
 }
 
-/**
- * Create or update user profile
- * @param {string} userId - User ID
- * @param {Object} profileData - Profile data
- * @returns {Promise<void>}
- */
 export async function saveUserProfile(userId, profileData) {
-  try {
-    const userRef = doc(db, 'users', userId);
-    const userSnap = await getDoc(userRef);
+  const mapped = {
+    id: userId,
+    email: profileData.email,
+    display_name: profileData.displayName || profileData.display_name,
+    photo_url: profileData.photoURL || profileData.photo_url,
+    provider: profileData.provider,
+  };
 
-    if (userSnap.exists()) {
-      // Update existing profile - don't overwrite wordBalance if it exists
-      const updateData = { ...profileData };
-      // Preserve existing wordBalance if not being updated
-      if (!updateData.wordBalance && userSnap.data().wordBalance !== undefined) {
-        delete updateData.wordBalance; // Don't update balance if not provided
-      }
-      await updateDoc(userRef, {
-        ...updateData,
-        updatedAt: serverTimestamp()
-      });
-    } else {
-      // Create new profile - initialize with 1500 words for new users
-      await setDoc(userRef, {
-        userId,
-        ...profileData,
-        wordBalance: 1500, // New users get 1500 words
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      }, { merge: true });
-    }
-  } catch (error) {
-    console.error('Error saving user profile:', error);
-    throw new Error(`Failed to save user profile: ${error.message}`);
+  const { data: existing } = await supabase
+    .from('profiles')
+    .select('id, word_balance')
+    .eq('id', userId)
+    .single();
+
+  if (existing) {
+    const update = { ...mapped };
+    delete update.id;
+    delete update.word_balance;
+    const { error } = await supabase.from('profiles').update(update).eq('id', userId);
+    if (error) throw new Error(`Failed to save user profile: ${error.message}`);
+  } else {
+    const { error } = await supabase.from('profiles').insert({ ...mapped, word_balance: 1500 });
+    if (error) throw new Error(`Failed to save user profile: ${error.message}`);
   }
 }
 
-/**
- * Get user profile
- * @param {string} userId - User ID
- * @returns {Promise<Object>} User profile data
- */
 export async function getUserProfile(userId) {
-  try {
-    const userRef = doc(db, 'users', userId);
-    const userSnap = await getDoc(userRef);
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
 
-    if (userSnap.exists()) {
-      const data = userSnap.data();
-      return {
-        id: userSnap.id,
-        ...data,
-        wordBalance: data.wordBalance !== undefined ? data.wordBalance : 1500 // Default to 1500 if not set
-      };
-    } else {
-      // If user doesn't exist, create profile with default balance
-      await setDoc(userRef, {
-        userId,
-        wordBalance: 1500,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      }, { merge: true });
-      return {
-        id: userId,
-        wordBalance: 1500
-      };
-    }
-  } catch (error) {
-    console.error('Error getting user profile:', error);
+  if (error && error.code !== 'PGRST116') {
     throw new Error(`Failed to get user profile: ${error.message}`);
   }
+
+  if (!data) {
+    const { error: insertError } = await supabase.from('profiles').insert({
+      id: userId,
+      word_balance: 1500,
+    });
+    if (insertError) throw new Error(`Failed to create user profile: ${insertError.message}`);
+    return { id: userId, wordBalance: 1500 };
+  }
+
+  return {
+    id: data.id,
+    email: data.email,
+    displayName: data.display_name,
+    photoURL: data.photo_url,
+    provider: data.provider,
+    wordBalance: data.word_balance ?? 1500,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  };
 }
 
-/**
- * Deduct words from user balance
- * @param {string} userId - User ID
- * @param {number} wordCount - Number of words to deduct
- * @returns {Promise<Object>} Updated user profile with new balance
- */
 export async function deductWordBalance(userId, wordCount) {
-  try {
-    const userRef = doc(db, 'users', userId);
-    const userSnap = await getDoc(userRef);
+  const profile = await getUserProfile(userId);
+  const newBalance = Math.max(0, (profile.wordBalance || 1500) - wordCount);
 
-    if (!userSnap.exists()) {
-      throw new Error('User profile not found');
-    }
+  const { error } = await supabase
+    .from('profiles')
+    .update({ word_balance: newBalance })
+    .eq('id', userId);
 
-    const currentBalance = userSnap.data().wordBalance || 1500;
-    const newBalance = Math.max(0, currentBalance - wordCount);
-
-    await updateDoc(userRef, {
-      wordBalance: newBalance,
-      updatedAt: serverTimestamp()
-    });
-
-    return {
-      id: userId,
-      wordBalance: newBalance,
-      wordsDeducted: wordCount
-    };
-  } catch (error) {
-    console.error('Error deducting word balance:', error);
-    throw new Error(`Failed to deduct word balance: ${error.message}`);
-  }
+  if (error) throw new Error(`Failed to deduct word balance: ${error.message}`);
+  return { id: userId, wordBalance: newBalance, wordsDeducted: wordCount };
 }
 
-/**
- * Add words to user balance (for purchases)
- * @param {string} userId - User ID
- * @param {number} wordCount - Number of words to add
- * @returns {Promise<Object>} Updated user profile with new balance
- */
 export async function addWordBalance(userId, wordCount) {
-  try {
-    const userRef = doc(db, 'users', userId);
-    const userSnap = await getDoc(userRef);
+  const profile = await getUserProfile(userId);
+  const newBalance = (profile.wordBalance || 1500) + wordCount;
 
-    if (!userSnap.exists()) {
-      // Create user profile if it doesn't exist
-      await setDoc(userRef, {
-        userId,
-        wordBalance: 1500 + wordCount,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      }, { merge: true });
-      return {
-        id: userId,
-        wordBalance: 1500 + wordCount,
-        wordsAdded: wordCount
-      };
-    }
+  const { error } = await supabase
+    .from('profiles')
+    .update({ word_balance: newBalance })
+    .eq('id', userId);
 
-    const currentBalance = userSnap.data().wordBalance || 1500;
-    const newBalance = currentBalance + wordCount;
-
-    await updateDoc(userRef, {
-      wordBalance: newBalance,
-      updatedAt: serverTimestamp()
-    });
-
-    return {
-      id: userId,
-      wordBalance: newBalance,
-      wordsAdded: wordCount
-    };
-  } catch (error) {
-    console.error('Error adding word balance:', error);
-    throw new Error(`Failed to add word balance: ${error.message}`);
-  }
+  if (error) throw new Error(`Failed to add word balance: ${error.message}`);
+  return { id: userId, wordBalance: newBalance, wordsAdded: wordCount };
 }
 
-/**
- * Check if user has sufficient word balance
- * @param {string} userId - User ID
- * @param {number} requiredWords - Number of words required
- * @returns {Promise<Object>} Balance check result
- */
 export async function checkWordBalance(userId, requiredWords) {
-  try {
-    const profile = await getUserProfile(userId);
-    const currentBalance = profile.wordBalance || 1500;
-    const hasSufficientBalance = currentBalance >= requiredWords;
-
-    return {
-      hasSufficientBalance,
-      currentBalance,
-      requiredWords,
-      remainingBalance: currentBalance - requiredWords
-    };
-  } catch (error) {
-    console.error('Error checking word balance:', error);
-    throw new Error(`Failed to check word balance: ${error.message}`);
-  }
+  const profile = await getUserProfile(userId);
+  const currentBalance = profile.wordBalance || 1500;
+  return {
+    hasSufficientBalance: currentBalance >= requiredWords,
+    currentBalance,
+    requiredWords,
+    remainingBalance: currentBalance - requiredWords,
+  };
 }
-
